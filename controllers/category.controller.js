@@ -1,12 +1,12 @@
-const Platform = require('../models/').Platform;
-var platformController = {
+const Category = require('../models').Category;
+var CategoryController = {
 
     get(req,res){
-        return Platform
+        return Category
             .findAll()
-                .then(Platform => {
+                .then(Category => {
                // projects will be an array of all Project instances
-                     res.status(200).send(Platform)
+                     res.status(200).send(Category)
          }).catch(
             error => res.status(400).send(error));
         
@@ -23,19 +23,19 @@ var platformController = {
         let img_url = req.body.img_url;
         
         // Create new job object
-        let platformData = {
+        let categoryData = {
                 'name' : name,
                 'img_url' : img_url
             };
 
-        return Platform
+        return Category
                 .create({
                     name : req.body.name,
                     img_url : req.body.img_url
                 })
-                .then(Platform => res.status(201).send(Platform))
+                .then(Category => res.status(201).send(Category))
                 .catch(error => res.status(400).send(error));
     }
 };
 
-module.exports = platformController;
+module.exports = CategoryController;
