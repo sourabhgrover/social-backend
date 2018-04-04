@@ -1,11 +1,12 @@
 var express = require('express');
 var router = express.Router();
 
-//Include PLatform Controller
+//Include Category Controller
 var category = require('../controllers/category.controller');
 
 router.get('/',category.get);
 router.post('/',category.post);
+router.delete('/:id',category.delete);
 
 
 module.exports = router;

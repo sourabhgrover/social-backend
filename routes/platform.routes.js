@@ -6,6 +6,7 @@ var platform = require('../controllers/platform.controller');
 
 router.get('/',platform.get);
 router.post('/',platform.post);
+router.delete('/:id',platform.delete);
 
 
 module.exports = router;

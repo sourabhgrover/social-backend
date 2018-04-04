@@ -1,0 +1,12 @@
+var express = require('express');
+var router = express.Router();
+
+//Include Group Controller
+var group = require('../controllers/group.controller');
+
+router.get('/',group.get);
+router.post('/',group.post);
+router.delete('/:id',group.delete);
+
+
+module.exports = router;

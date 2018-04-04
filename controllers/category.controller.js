@@ -35,7 +35,23 @@ var CategoryController = {
                 })
                 .then(Category => res.status(201).send(Category))
                 .catch(error => res.status(400).send(error));
-    }
+    },
+    delete(req, res) {
+        return Category
+          .findById(req.params.id)
+          .then(Category => {
+            if (!Category) {
+              return res.status(400).send({
+                message: 'Category Not Found',
+              });
+            }
+            return Category
+              .destroy()
+              .then(() => res.status(204).send())
+              .catch(error => res.status(400).send(error));
+          })
+          .catch(error => res.status(400).send(error));
+      }
 };
 
 module.exports = CategoryController;
