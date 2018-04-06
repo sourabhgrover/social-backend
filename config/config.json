@@ -9,7 +9,7 @@
   "test": {
     "username": "socialHub",
     "password": "$socialHub#timo!Boll",
-    "database": "social",
+    "database": null,
     "host": "social.c2py0m241zxf.ap-south-1.rds.amazonaws.com",
     "dialect": "mysql",
     "port" : 3306
