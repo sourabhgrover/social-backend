@@ -8,12 +8,10 @@ const db = {};
 
 console.log(process.env.NODE_ENV);
 console.log(config);
-console.log(process.env[config.use_env_variable]);
 let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable]);
 } else {
-  console.log("comes here");
   sequelize = new Sequelize(
     config.database, config.username, config.password, config
   );
