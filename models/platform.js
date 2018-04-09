@@ -1,11 +1,11 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  var Platform = sequelize.define('Platform', {
+  var platform = sequelize.define('platform', {
     name: DataTypes.STRING,
     img_url: DataTypes.STRING
   }, {});
-  Platform.associate = function(models) {
+  platform.associate = function(models) {
     // associations can be defined here
   };
-  return Platform;
+  return platform;
 };

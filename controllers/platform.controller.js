@@ -1,4 +1,4 @@
-const Platform = require('../models/').Platform;
+const Platform = require('../models/').platform;
 var platformController = {
 
     get(req,res){
