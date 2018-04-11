@@ -2,7 +2,7 @@ const Platform = require('../models/').platform;
 var platformController = {
 
     get(req,res){
-        let imageUrl = req.protocol + '://' + req.get('host') + 'images/platform/';
+        let imageUrl = req.protocol + '://' + req.get('host') + '/images/platform/';
         console.log(imageUrl);
         return Platform
             .findAll()
