@@ -16,27 +16,48 @@ var groupController = {
                     }
             );
     },
+
     filter(req,res){
+        
+        // Storing All QueryString Data in queryString Var
         let queryString = req.query;
+
         platform_id = queryString.platform_id;
 
+        // Declaring Group Where Condition Object
         whereConditionObj =  {};
-        
+
+        // Declaring Group Relation Where Condition Object
+        groupRelationWhereConditionObj =  {};
+
+        // If Id passes in queryString add in Group Model where condition 
         if(queryString.id){
             whereConditionObj.id = queryString.id;
         }
+
+        // If platform_id passes in queryString add in Group Model where condition 
         if(queryString.platform_id){
             whereConditionObj.platform_id = queryString.platform_id;
         }
+
+        // If category_id passes in queryString add in Group Relation Model where condition 
+        if(queryString.category_id){
+            groupRelationWhereConditionObj.category_id = queryString.category_id;
+        }
+
         
         return Group
         .findAll({
-                where : whereConditionObj
+                where : whereConditionObj,
+                include: [{
+                    model: GroupRelation,
+                    where : groupRelationWhereConditionObj
+                }] 
             })
             .then(Group => {
                 // projects will be an array of all Project instances
                  res.status(200).send(Group)
-     }).catch(
+            }).catch(
             error => {
                         console.log(error.stack);
                         res.status(400).send(error)
@@ -44,6 +65,7 @@ var groupController = {
         );
         
     },
+    
     // TODO Refactor
     post(req,res){
    

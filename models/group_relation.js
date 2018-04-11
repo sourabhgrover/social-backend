@@ -1,12 +1,12 @@
-'use strict';
 module.exports = (sequelize, DataTypes) => {
-  var group_relation = sequelize.define('group_relation', {
+  const group_relation = sequelize.define('group_relation', {
     group_id: DataTypes.STRING,
     platform_id: DataTypes.INTEGER,
     category_id: DataTypes.INTEGER
   }, {});
-  group_relation.associate = function(models) {
-    // associations can be defined here
+  group_relation.associate = (models) => {
+     // associations can be defined here
+    //  group_relation.belongsTo(models.group,{foreignKey: 'group_id'});
   };
   return group_relation;
 };
