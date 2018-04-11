@@ -2,10 +2,19 @@ const Platform = require('../models/').platform;
 var platformController = {
 
     get(req,res){
+        let imageUrl = req.protocol + '://' + req.get('host') + 'images/platform/';
+        console.log(imageUrl);
         return Platform
             .findAll()
                 .then(Platform => {
-               // projects will be an array of all Project instances
+                    // Platform will be an array of all Platform instances
+                    for(let i=0;i < Platform.length;i++ ){
+                        if(Platform[i].dataValues.img_name){
+                            Platform[i].dataValues.img_url = imageUrl+Platform[i].dataValues.img_name;
+                        }else{
+                            Platform[i].dataValues.img_url = '';
+                        }
+                    }
                      res.status(200).send(Platform)
          }).catch(
             error => res.status(400).send(error));
