@@ -14,6 +14,12 @@ module.exports = {
       img_name: {
         type: Sequelize.STRING
       },
+      package_name_android: {
+        type: Sequelize.STRING
+      },
+      package_name_ios: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
