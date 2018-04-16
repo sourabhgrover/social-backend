@@ -5,10 +5,14 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 require('dotenv').config();
+var cors = require('cors');
 
 var routes = require('./routes/index');
 
 var app = express();
+
+// To fix cors problem
+app.use(cors());
 
 
 // uncomment after placing your favicon in /public
