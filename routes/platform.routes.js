@@ -5,6 +5,7 @@ var router = express.Router();
 var platform = require('../controllers/platform.controller');
 
 router.get('/',platform.get);
+router.get('/:id',platform.getOne);
 router.post('/',platform.post);
 router.delete('/:id',platform.delete);
 

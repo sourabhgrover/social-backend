@@ -1,6 +1,7 @@
 const Platform = require('../models/').platform;
 var fs = require('fs');
 
+
 // We use multer to handle  mulitpart form data
 //require multer for the file uploads
 // var multer = require('multer');
@@ -19,8 +20,7 @@ var fs = require('fs');
 var platformController = {
 
     get(req,res){
-        let imageUrl = req.protocol + '://' + req.get('host') + '/images/platform/';
-        console.log(imageUrl);
+        const imageUrl = req.protocol + '://' + req.get('host') + '/images/platform/';
         return Platform
             .findAll()
                 .then(Platform => {
@@ -36,6 +36,22 @@ var platformController = {
          }).catch(
             error => res.status(400).send(error));
         
+    },
+    getOne(req,res){
+        const imageUrl = req.protocol + '://' + req.get('host') + '/images/platform/';
+        return Platform
+        .findOne({ where: {id: req.params.id} })
+            .then(Platform => {
+                console.log(Platform.dataValues);
+                if(Platform.dataValues.img_name){
+                    Platform.dataValues.img_url = imageUrl+Platform.dataValues.img_name;
+                }else{
+                    Platform.dataValues.img_url = '';
+                }
+                 res.status(200).send(Platform)
+     }).catch(
+        error => res.status(400).send(error));
+
     },
     post(req,res){
 
