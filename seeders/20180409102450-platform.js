@@ -9,7 +9,7 @@ module.exports = {
     return queryInterface.bulkInsert('platforms', [
       {
         name : 'Facebook Page',
-        img_name : 'fb-page.jpg',
+        img_name : 'fb-page.png',
         package_name_android : 'com.facebook.katana',
         package_name_ios : '',
         createdAt : new Date(),
