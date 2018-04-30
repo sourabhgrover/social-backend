@@ -26,7 +26,6 @@ var CategoryController = {
         return Category
         .findOne({ where: {id: req.params.id} })
             .then(Category => {
-                console.log(Category.dataValues);
                 if(Category.dataValues.img_name){
                     Category.dataValues.img_url = imageUrl+Category.dataValues.img_name;
                 }else{

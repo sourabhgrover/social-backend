@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
   group_relation.associate = (models) => {
      // associations can be defined here
     //  group_relation.belongsTo(models.group,{foreignKey: 'group_id'});
+        group_relation.belongsTo(models.category,{foreignKey: 'category_id'});
   };
   return group_relation;
 };

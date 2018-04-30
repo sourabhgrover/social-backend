@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
   group.associate = (models) => {
     // Association
      group.hasMany(models.group_relation, {foreignKey: 'group_id'});
+     group.belongsTo(models.platform,{foreignKey: 'platform_id'});
   };
   return group;
 };

@@ -1,14 +1,32 @@
 const Group = require('../models/').group;
 const GroupRelation = require('../models/').group_relation;
+const Platform = require('../models/').platform;
+var fs = require('fs');
+
 
 var groupController = {
 
     get(req,res){
+        const imageUrl = req.protocol + '://' + req.get('host') + '/images/group/';
         return Group
-            .findAll()
+            .findAll({
+                include: [{
+                    model: GroupRelation
+                },{
+                    model: Platform
+                }
+                ] 
+            })
                 .then(Group => {
+                    for(let i=0;i < Group.length;i++ ){
+                        if(Group[i].dataValues.img_name){
+                            Group[i].dataValues.img_url = imageUrl+Group[i].dataValues.img_name;
+                        }else{
+                            Group[i].dataValues.img_url = '';
+                        }
+                    }
                     // projects will be an array of all Project instances
-                     res.status(200).send(Group)
+                     res.status(200).send(Group);
          }).catch(
                 error => {
                             console.log(error.stack);
@@ -16,7 +34,29 @@ var groupController = {
                     }
             );
     },
+    getOne(req,res){
+        const imageUrl = req.protocol + '://' + req.get('host') + '/images/group/';
+        return Group
+        .findOne({ 
+            where: {id: req.params.id},
+            include: [{
+                model: GroupRelation
+            }
+            ,{
+                model: Platform
+            }] 
+         })
+            .then(Group => {
+                if(Group.dataValues.img_name){
+                    Group.dataValues.img_url = imageUrl+Group.dataValues.img_name;
+                }else{
+                    Group.dataValues.img_url = '';
+                }
+                 res.status(200).send(Group);
+     }).catch(
+        error => res.status(400).send(error));
 
+    },
     filter(req,res){
         
         // Storing All QueryString Data in queryString Var
@@ -45,13 +85,15 @@ var groupController = {
             groupRelationWhereConditionObj.category_id = queryString.category_id;
         }
 
-        
         return Group
         .findAll({
                 where : whereConditionObj,
                 include: [{
                     model: GroupRelation,
                     where : groupRelationWhereConditionObj
+                },
+                ,{
+                    model: Platform
                 }] 
             })
             .then(Group => {
@@ -68,29 +110,96 @@ var groupController = {
     
     // TODO Refactor
     post(req,res){
-   
+        
+        // Create new Group object
+        let GroupData = {};
+
         // get the name from request body
         let name = req.body.name;
         if(!name){
-            res.status(400).send();
+            res.status(400).send('Name Field Is Required');
         }
+        GroupData['name'] = name;
 
          // get the name from request body
          let group_url = req.body.group_url;
          if(!group_url){
-             res.status(400).send();
+             res.status(400).send('Group URL Field Is Required');
+         }
+         GroupData['group_url'] = group_url;
+
+         if(req.body.platform_id){
+            GroupData['platform_id'] = req.body.platform_id;
          }
         
-        // get the Image Url from the request body
+         // Regular expression for image type:
+        // This regular image extracts the "jpeg" from "image/jpeg"
+        var imageTypeRegularExpression      = /\/(.*?)$/;      
+
+        // Generate random string
+        var crypto                          = require('crypto');
+        var seed                            = crypto.randomBytes(20);
+        var uniqueSHA1String                = crypto
+                                               .createHash('sha1')
+                                                .update(seed)
+                                                 .digest('hex');
+
         let img_name = req.body.img_name;
+        if(img_name){
+            var imageBuffer                      = decodeBase64Image(img_name);
+            var userUploadedPlatformImageLocation = 'public/images/group/';
+    
+            var uniqueRandomImageName            = 'GroupImage-' + uniqueSHA1String;
+            // This variable is actually an array which has 5 values,
+            // The [1] value is the real image extension
+            var imageTypeDetected                = imageBuffer
+                                                    .type
+                                                     .match(imageTypeRegularExpression);
+    
+            var userUploadedImagePath            = userUploadedPlatformImageLocation + 
+                                                   uniqueRandomImageName +
+                                                   '.' + 
+                                                   imageTypeDetected[1];
+            let uploadedImageName =     uniqueRandomImageName + '.' + imageTypeDetected[1];
+    
+             // Save decoded binary image to disk
+             try
+             {
+             fs.writeFile(
+                 userUploadedImagePath,
+                 imageBuffer.data,  
+                 {encoding: 'base64'},   
+                 function(err) {
+                     if(err){
+                        return res.status(400).send(err);
+                      } 
+                    }
+                );
+             }
+             catch(error)
+             {
+                 console.log('ERROR:', error);
+             }
+             GroupData['img_name'] = uploadedImageName;
+        }
+
+        function decodeBase64Image(dataString) 
+        {
+          var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+          var response = {};
+    
+          if (matches.length !== 3) 
+          {
+            return res.status(400).send("Invalid Input String");
+          }
+    
+          response.type = matches[1];
+          response.data = new Buffer(matches[2], 'base64');
+    
+          return response;
+        }
         
-        // Create new job object
-        let GroupData = {
-                'name' : name,
-                'img_name' : img_name,
-                'group_url' : group_url,
-                'platform_id' : req.body.platform_id
-            };
+        
 
         return Group
                 .create(GroupData)
@@ -98,21 +207,25 @@ var groupController = {
                         Group => {
                         
                             let GroupRelationData = [];
-                            for (let i = 0, len = req.body.category_id.length; i < len; i++) {
-                                singleGroupRelation = {
-                                    'group_id' : Group.id,
-                                    'category_id' : req.body.category_id[i],
-                                    'platform_id' : Group.platform_id
-                                }
-                                GroupRelationData.push(singleGroupRelation);   
-                              }
-                            
-                            GroupRelation.bulkCreate(GroupRelationData,  {individualHooks: true }),
+                            if(req.body.category_id){
+                                for (let i = 0, len = req.body.category_id.length; i < len; i++) {
+                                    singleGroupRelation = {
+                                        'group_id' : Group.id,
+                                        'category_id' : req.body.category_id[i],
+                                        'platform_id' : Group.platform_id
+                                    }
+                                    GroupRelationData.push(singleGroupRelation);   
+                                  }
+                                
+                                GroupRelation.bulkCreate(GroupRelationData,  {individualHooks: true });   
+                            }                            
                             // TODO Id is not returning in Group Relation Data
                             res.status(201).send({Group,GroupRelationData})
                                })
-
-                .catch(error => res.status(400).send(error));
+                .catch(error => {
+                            console.log(error);
+                                    res.status(400).send(error)
+                            });
     },
 
     delete(req, res) {
