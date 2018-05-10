@@ -61,7 +61,7 @@ var groupController = {
         
         // Storing All QueryString Data in queryString Var
         let queryString = req.query;
-
+        
         platform_id = queryString.platform_id;
 
         // Declaring Group Where Condition Object
@@ -88,20 +88,21 @@ var groupController = {
         return Group
         .findAll({
                 where : whereConditionObj,
-                include: [{
+                include: [
+                {
                     model: GroupRelation,
                     where : groupRelationWhereConditionObj
                 },
-                ,{
+                {
                     model: Platform
-                }] 
+                }
+            ] 
             })
             .then(Group => {
                 // projects will be an array of all Project instances
                  res.status(200).send(Group)
             }).catch(
             error => {
-                        console.log(error.stack);
                         res.status(400).send(error)
                 }
         );
