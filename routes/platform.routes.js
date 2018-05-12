@@ -8,6 +8,7 @@ router.get('/',platform.get);
 router.get('/:id',platform.getOne);
 router.post('/',platform.post);
 router.delete('/:id',platform.delete);
+router.put('/:id',platform.put);
 
 
 module.exports = router;

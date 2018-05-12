@@ -74,80 +74,47 @@ var platformController = {
             platformData['package_name_ios'] = reqBody.package_name_ios;
         }
 
-       
-        // Regular expression for image type:
-        // This regular image extracts the "jpeg" from "image/jpeg"
-        var imageTypeRegularExpression      = /\/(.*?)$/;      
-
-        // Generate random string
-        var crypto                          = require('crypto');
-        var seed                            = crypto.randomBytes(20);
-        var uniqueSHA1String                = crypto
-                                               .createHash('sha1')
-                                                .update(seed)
-                                                 .digest('hex');
-
-
-
         let img_name = req.body.img_name;
-        if(img_name){
-            var imageBuffer                      = decodeBase64Image(img_name);
-            var userUploadedPlatformImageLocation = 'public/images/platform/';
-    
-            var uniqueRandomImageName            = 'PlatformImage-' + uniqueSHA1String;
-            // This variable is actually an array which has 5 values,
-            // The [1] value is the real image extension
-            var imageTypeDetected                = imageBuffer
-                                                    .type
-                                                     .match(imageTypeRegularExpression);
-    
-            var userUploadedImagePath            = userUploadedPlatformImageLocation + 
-                                                   uniqueRandomImageName +
-                                                   '.' + 
-                                                   imageTypeDetected[1];
-            let uploadedImageName =     uniqueRandomImageName + '.' + imageTypeDetected[1];
-    
-             // Save decoded binary image to disk
-             try
-             {
-             fs.writeFile(
-                 userUploadedImagePath,
-                 imageBuffer.data,  
-                 {encoding: 'base64'},   
-                 function(err) {
-                     if(err){
-                        return res.status(400).send(err);
-                      } 
-                    }
-                );
-             }
-             catch(error)
-             {
-                 console.log('ERROR:', error);
-             }
-             platformData['img_name'] = uploadedImageName;
+        if(img_name){            
+                platformData['img_name'] =  uploadImage(img_name);
         }        
         return Platform
                 .create(platformData)
                 .then(Platform => res.status(201).send(Platform))
                 .catch(error => res.status(400).send(error));
 
-    function decodeBase64Image(dataString) 
-    {
-      var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      var response = {};
+    },
+    put(req,res){
+        let platformData = {};
+        // get the name from request body
+        let reqBody = req.body;
+        let name = reqBody.name;
 
-      if (matches.length !== 3) 
-      {
-        return res.status(400).send("Invalid Input String");
-      }
+        if(!name){
+            res.status(400).send();
+        }
 
-      response.type = matches[1];
-      response.data = new Buffer(matches[2], 'base64');
+        platformData['name'] = name;
 
-      return response;
-    }
+        if(reqBody.package_name_android){
+            platformData['package_name_android'] = reqBody.package_name_android;
+        }
 
+        if(reqBody.package_name_ios){
+            platformData['package_name_ios'] = reqBody.package_name_ios;
+        }
+
+        let img_name = req.body.img_name;
+        if(img_name){
+            platformData['img_name'] =  uploadImage(img_name);
+        }
+
+        return Platform.update(
+            platformData,
+            { where: { id: req.params.id } }
+          ).then(Platform => res.status(200).send(Platform))
+          .catch(error => res.status(400).send(error));
+        
     },
     delete(req, res) {
         return Platform
@@ -168,5 +135,74 @@ var platformController = {
         
 };
 
+
+function uploadImage(img_name){
+
+    
+        // Regular expression for image type:
+        // This regular image extracts the "jpeg" from "image/jpeg"
+        var imageTypeRegularExpression      = /\/(.*?)$/;      
+
+        // Generate random string
+        var crypto                          = require('crypto');
+        var seed                            = crypto.randomBytes(20);
+        var uniqueSHA1String                = crypto
+                                               .createHash('sha1')
+                                                .update(seed)
+                                                 .digest('hex');
+
+    var imageBuffer                      = decodeBase64Image(img_name);
+    var userUploadedPlatformImageLocation = 'public/images/platform/';
+
+    var uniqueRandomImageName            = 'PlatformImage-' + uniqueSHA1String;
+    // This variable is actually an array which has 5 values,
+    // The [1] value is the real image extension
+    var imageTypeDetected                = imageBuffer
+                                            .type
+                                             .match(imageTypeRegularExpression);
+
+    var userUploadedImagePath            = userUploadedPlatformImageLocation + 
+                                           uniqueRandomImageName +
+                                           '.' + 
+                                           imageTypeDetected[1];
+    let uploadedImageName =     uniqueRandomImageName + '.' + imageTypeDetected[1];
+
+     // Save decoded binary image to disk
+     try
+     {
+     fs.writeFile(
+         userUploadedImagePath,
+         imageBuffer.data,  
+         {encoding: 'base64'},   
+         function(err) {
+             if(err){
+                return res.status(400).send(err);
+              } 
+            }
+        );
+     }
+     catch(error)
+     {
+         console.log('ERROR:', error);
+     }
+     return uploadedImageName;
+
+}
+
+function decodeBase64Image(dataString) 
+{
+  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  var response = {};
+
+  if (matches.length !== 3) 
+  {
+    return res.status(400).send("Invalid Input String");
+  }
+
+  response.type = matches[1];
+  response.data = new Buffer(matches[2], 'base64');
+
+  return response;
+}
 
 module.exports = platformController;
