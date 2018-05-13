@@ -9,7 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       group_url: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique:true
       },
       name: {
         type: Sequelize.STRING

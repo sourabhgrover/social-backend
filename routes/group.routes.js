@@ -9,6 +9,7 @@ router.get('/:id',group.getOne);
 router.get('/',group.get);
 router.post('/',group.post);
 router.delete('/:id',group.delete);
+router.put('/:id',group.put);
 
 
 module.exports = router;

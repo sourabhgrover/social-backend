@@ -1,6 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
   const group = sequelize.define('group', {
-    group_url: DataTypes.STRING,
+    group_url:{
+      type: DataTypes.STRING,
+      unique: true
+    },
     name: DataTypes.STRING,
     img_name: DataTypes.STRING,
     platform_id: DataTypes.INTEGER

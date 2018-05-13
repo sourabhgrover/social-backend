@@ -117,10 +117,14 @@ var groupController = {
 
         // get the name from request body
         let name = req.body.name;
-        if(!name){
-            res.status(400).send('Name Field Is Required');
+        // if(!name){
+        //     res.status(400).send('Name Field Is Required');
+        // }
+
+        if(req.body.name){
+            GroupData['name'] = name;
         }
-        GroupData['name'] = name;
+        
 
          // get the name from request body
          let group_url = req.body.group_url;
@@ -132,7 +136,131 @@ var groupController = {
          if(req.body.platform_id){
             GroupData['platform_id'] = req.body.platform_id;
          }
+
+        let img_name = req.body.img_name;
+        if(img_name){
+            GroupData['img_name'] = uploadImage(img_name);
+        }
+
+        return Group
+                .create(GroupData)
+                .then(
+                        Group => {
+                            let GroupRelationData = [];
+                            if(req.body.category_id){
+                                for (let i = 0, len = req.body.category_id.length; i < len; i++) {
+                                    singleGroupRelation = {
+                                        'group_id' : Group.id,
+                                        'category_id' : req.body.category_id[i],
+                                        'platform_id' : Group.platform_id
+                                    }
+                                    GroupRelationData.push(singleGroupRelation);   
+                                  }
+                                
+                                GroupRelation.bulkCreate(GroupRelationData,  {individualHooks: true });   
+                            }                            
+                            // TODO Id is not returning in Group Relation Data
+                            res.status(201).send({Group,GroupRelationData})
+                               })
+                .catch(error => {
+                            console.log(error);
+                                    res.status(400).send(error)
+                            });
+    },
+      // TODO Refactor
+      put(req,res){
         
+        // Create new Group object
+        let GroupData = {};
+
+        // get the name from request body
+        let name = req.body.name;
+        // if(!name){
+        //     res.status(400).send('Name Field Is Required');
+        // }
+
+        if(req.body.name){
+            GroupData['name'] = name;
+        }
+        
+
+         // get the name from request body
+         let group_url = req.body.group_url;
+         if(!group_url){
+             res.status(400).send('Group URL Field Is Required');
+         }
+         GroupData['group_url'] = group_url;
+
+         if(req.body.platform_id){
+            GroupData['platform_id'] = req.body.platform_id;
+         }
+
+        let img_name = req.body.img_name;
+        if(img_name){
+            GroupData['img_name'] = uploadImage(img_name);
+        }
+
+        return Group
+                .update(
+                    GroupData,
+                    { where: { id: req.params.id } }
+                )
+                .then(
+                        Group => {
+                            GroupRelation.destroy({
+                                where: {
+                                    group_id: req.params.id
+                                }
+                            });
+                            let GroupRelationData = [];
+                            if(req.body.category_id){
+                                for (let i = 0, len = req.body.category_id.length; i < len; i++) {
+                                    singleGroupRelation = {
+                                        'group_id' : req.params.id,
+                                        'category_id' : req.body.category_id[i],
+                                        'platform_id' : req.body.platform_id
+                                    }
+                                    GroupRelationData.push(singleGroupRelation);   
+                                  }
+                                
+                                GroupRelation.bulkCreate(GroupRelationData,  {individualHooks: true });   
+                            }                            
+                            // TODO Id is not returning in Group Relation Data
+                            res.status(201).send({Group,GroupRelationData})
+                               })
+                .catch(error => {
+                            console.log(error);
+                                    res.status(400).send(error)
+                            });
+    },
+    delete(req, res) {
+        return Group
+          .findById(req.params.id)
+          .then(Group => {
+            if (!Group) {
+              return res.status(400).send({
+                message: 'Group Not Found',
+              });
+            }
+             Group
+              .destroy()
+              .then(() => res.status(204).send())
+              .catch(error => res.status(400).send(error));
+
+              GroupRelation.destroy({
+                where: {
+                    group_id: req.params.id
+                }
+            });
+          })
+          .catch(error => res.status(400).send(error));
+      }
+};
+
+
+function uploadImage(img_name){
+
+      
          // Regular expression for image type:
         // This regular image extracts the "jpeg" from "image/jpeg"
         var imageTypeRegularExpression      = /\/(.*?)$/;      
@@ -144,10 +272,7 @@ var groupController = {
                                                .createHash('sha1')
                                                 .update(seed)
                                                  .digest('hex');
-
-        let img_name = req.body.img_name;
-        if(img_name){
-            var imageBuffer                      = decodeBase64Image(img_name);
+    var imageBuffer                      = decodeBase64Image(img_name);
             var userUploadedPlatformImageLocation = 'public/images/group/';
     
             var uniqueRandomImageName            = 'GroupImage-' + uniqueSHA1String;
@@ -181,70 +306,25 @@ var groupController = {
              {
                  console.log('ERROR:', error);
              }
-             GroupData['img_name'] = uploadedImageName;
-        }
+             return uploadedImageName;
+}
 
-        function decodeBase64Image(dataString) 
-        {
-          var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-          var response = {};
-    
-          if (matches.length !== 3) 
-          {
-            return res.status(400).send("Invalid Input String");
-          }
-    
-          response.type = matches[1];
-          response.data = new Buffer(matches[2], 'base64');
-    
-          return response;
-        }
-        
-        
+function decodeBase64Image(dataString) 
+{
+  var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  var response = {};
 
-        return Group
-                .create(GroupData)
-                .then(
-                        Group => {
-                        
-                            let GroupRelationData = [];
-                            if(req.body.category_id){
-                                for (let i = 0, len = req.body.category_id.length; i < len; i++) {
-                                    singleGroupRelation = {
-                                        'group_id' : Group.id,
-                                        'category_id' : req.body.category_id[i],
-                                        'platform_id' : Group.platform_id
-                                    }
-                                    GroupRelationData.push(singleGroupRelation);   
-                                  }
-                                
-                                GroupRelation.bulkCreate(GroupRelationData,  {individualHooks: true });   
-                            }                            
-                            // TODO Id is not returning in Group Relation Data
-                            res.status(201).send({Group,GroupRelationData})
-                               })
-                .catch(error => {
-                            console.log(error);
-                                    res.status(400).send(error)
-                            });
-    },
+  if (matches.length !== 3) 
+  {
+    return res.status(400).send("Invalid Input String");
+  }
 
-    delete(req, res) {
-        return Group
-          .findById(req.params.id)
-          .then(Group => {
-            if (!Group) {
-              return res.status(400).send({
-                message: 'Group Not Found',
-              });
-            }
-            return Group
-              .destroy()
-              .then(() => res.status(204).send())
-              .catch(error => res.status(400).send(error));
-          })
-          .catch(error => res.status(400).send(error));
-      }
-};
+  response.type = matches[1];
+  response.data = new Buffer(matches[2], 'base64');
+
+  return response;
+}
+
+
 
 module.exports = groupController;
